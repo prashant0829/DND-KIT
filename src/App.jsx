@@ -1,42 +1,191 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
+import {
+  DndContext,
+  DragOverlay,
+  closestCorners,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+} from "@dnd-kit/core";
+import { arrayMove, sortableKeyboardCoordinates } from "@dnd-kit/sortable";
+
+import Container from "./Container";
+import { Item } from "./SortableItem";
+
+const defaultAnnouncements = {
+  onDragStart(id) {
+    console.log(`Picked up draggable item ${id}.`);
+  },
+  onDragOver(id, overId) {
+    if (overId) {
+      console.log(
+        `Draggable item ${id} was moved over droppable area ${overId}.`
+      );
+      return;
+    }
+    console.log(`Draggable item ${id} is no longer over a droppable area.`);
+  },
+  onDragEnd(id, overId) {
+    if (overId) {
+      console.log(
+        `Draggable item ${id} was dropped over droppable area ${overId}`
+      );
+      return;
+    }
+    console.log(`Draggable item ${id} was dropped.`);
+  },
+  onDragCancel(id) {
+    console.log(`Dragging was cancelled. Draggable item ${id} was dropped.`);
+  },
+};
+
+const LOCAL_STORAGE_KEY = "dnd-items";
+
+function getInitialItems() {
+  const storedItems = localStorage.getItem(LOCAL_STORAGE_KEY);
+  return storedItems
+    ? JSON.parse(storedItems)
+    : {
+        root: ["1", "2", "3"],
+        container1: ["4", "5", "6"],
+        container2: ["7", "8", "9"],
+        container3: [],
+      };
+}
 
 export default function App() {
-  const [data, setData] = useState({});
-  const [pageSize, setPageSize] = useState(10);
-  const [pageData, setPageData] = useState([]);
+  const [items, setItems] = useState(getInitialItems);
+  const [activeId, setActiveId] = useState(null);
 
   useEffect(() => {
-    const fetchProducts = async () => {
-      console.log("hey");
-      const res = await fetch("https://dummyjson.com/products?limit=100");
-      const d = await res.json();
-      if (d) {
-        console.log(d);
-        setData(d);
-        setPageData(d.products.slice(0, 10));
-      }
-    };
-    fetchProducts();
-  }, []);
+    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(items));
+  }, [items]);
 
-  useEffect(() => {
-    if (data && pageSize > 10) {
-      setPageData(data.products.slice(0, pageSize));
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
+
+  function findContainer(id) {
+    if (id in items) {
+      return id;
     }
-  }, [pageSize]);
+    return Object.keys(items).find((key) => items[key].includes(id));
+  }
 
-  useEffect(() => {
-    console.log(pageData);
-  }, [pageData]);
+  function handleDragStart(event) {
+    const { active } = event;
+    const { id } = active;
+    setActiveId(id);
+  }
 
-  if (pageData.length == 0) return "Loading";
+  function handleDragOver(event) {
+    const { active, over, draggingRect } = event;
+    const { id } = active;
+    const { id: overId } = over;
+
+    // Find the containers
+    const activeContainer = findContainer(id);
+    const overContainer = findContainer(overId);
+
+    if (
+      !activeContainer ||
+      !overContainer ||
+      activeContainer === overContainer
+    ) {
+      return;
+    }
+
+    setItems((prev) => {
+      const activeItems = prev[activeContainer];
+      const overItems = prev[overContainer];
+
+      // Find the indexes for the items
+      const activeIndex = activeItems.indexOf(id);
+      const overIndex = overItems.indexOf(overId);
+
+      let newIndex;
+      if (overId in prev) {
+        // We're at the root droppable of a container
+        newIndex = overItems.length;
+      } else {
+        const isBelowLastItem =
+          over &&
+          overIndex === overItems.length - 1 &&
+          draggingRect &&
+          draggingRect.offsetTop > over.rect.offsetTop + over.rect.height;
+
+        const modifier = isBelowLastItem ? 1 : 0;
+
+        newIndex = overIndex >= 0 ? overIndex + modifier : overItems.length;
+      }
+
+      return {
+        ...prev,
+        [activeContainer]: [
+          ...prev[activeContainer].filter((item) => item !== active.id),
+        ],
+        [overContainer]: [
+          ...prev[overContainer].slice(0, newIndex),
+          items[activeContainer][activeIndex],
+          ...prev[overContainer].slice(newIndex),
+        ],
+      };
+    });
+  }
+
+  function handleDragEnd(event) {
+    const { active, over } = event;
+    const { id } = active;
+    const { id: overId } = over;
+
+    const activeContainer = findContainer(id);
+    const overContainer = findContainer(overId);
+
+    if (
+      !activeContainer ||
+      !overContainer ||
+      activeContainer !== overContainer
+    ) {
+      return;
+    }
+
+    const activeIndex = items[activeContainer].indexOf(active.id);
+    const overIndex = items[overContainer].indexOf(overId);
+
+    if (activeIndex !== overIndex) {
+      setItems((items) => ({
+        ...items,
+        [overContainer]: arrayMove(
+          items[overContainer],
+          activeIndex,
+          overIndex
+        ),
+      }));
+    }
+
+    setActiveId(null);
+  }
 
   return (
-    <div className="App">
-      {pageData?.map((product, i) => {
-        return <div key={i}>{product.title}</div>;
-      })}
-      <button onClick={() => setPageSize(pageSize + 10)}>Load More</button>
+    <div className="flex flex-row">
+      <DndContext
+        announcements={defaultAnnouncements}
+        sensors={sensors}
+        collisionDetection={closestCorners}
+        onDragStart={handleDragStart}
+        onDragOver={handleDragOver}
+        onDragEnd={handleDragEnd}
+      >
+        <Container id="root" items={items.root} />
+        <Container id="container1" items={items.container1} />
+        <Container id="container2" items={items.container2} />
+        <Container id="container3" items={items.container3} />
+        <DragOverlay>{activeId ? <Item id={activeId} /> : null}</DragOverlay>
+      </DndContext>
     </div>
   );
 }

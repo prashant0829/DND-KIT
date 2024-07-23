@@ -13,6 +13,12 @@ import { arrayMove, sortableKeyboardCoordinates } from "@dnd-kit/sortable";
 import Container from "./Container";
 import { Item } from "./SortableItem";
 
+const wrapperStyle = {
+  display: "flex",
+  flexDirection: "row",
+  gap: "10px", // Add gap between containers
+};
+
 const defaultAnnouncements = {
   onDragStart(id) {
     console.log(`Picked up draggable item ${id}.`);
@@ -24,6 +30,7 @@ const defaultAnnouncements = {
       );
       return;
     }
+
     console.log(`Draggable item ${id} is no longer over a droppable area.`);
   },
   onDragEnd(id, overId) {
@@ -33,6 +40,7 @@ const defaultAnnouncements = {
       );
       return;
     }
+
     console.log(`Draggable item ${id} was dropped.`);
   },
   onDragCancel(id) {
@@ -73,12 +81,14 @@ export default function App() {
     if (id in items) {
       return id;
     }
+
     return Object.keys(items).find((key) => items[key].includes(id));
   }
 
   function handleDragStart(event) {
     const { active } = event;
     const { id } = active;
+
     setActiveId(id);
   }
 
@@ -140,6 +150,13 @@ export default function App() {
   function handleDragEnd(event) {
     const { active, over } = event;
     const { id } = active;
+
+    // Check if over is null
+    if (!over) {
+      setActiveId(null);
+      return;
+    }
+
     const { id: overId } = over;
 
     const activeContainer = findContainer(id);
@@ -150,6 +167,7 @@ export default function App() {
       !overContainer ||
       activeContainer !== overContainer
     ) {
+      setActiveId(null);
       return;
     }
 
@@ -171,7 +189,7 @@ export default function App() {
   }
 
   return (
-    <div className="flex flex-row">
+    <div style={wrapperStyle}>
       <DndContext
         announcements={defaultAnnouncements}
         sensors={sensors}
@@ -180,11 +198,29 @@ export default function App() {
         onDragOver={handleDragOver}
         onDragEnd={handleDragEnd}
       >
-        <Container id="root" items={items.root} />
-        <Container id="container1" items={items.container1} />
-        <Container id="container2" items={items.container2} />
-        <Container id="container3" items={items.container3} />
-        <DragOverlay>{activeId ? <Item id={activeId} /> : null}</DragOverlay>
+        <Container id="root" items={items.root} activeId={activeId} />
+
+        <Container
+          id="container1"
+          items={items.container1}
+          activeId={activeId}
+        />
+
+        <Container
+          id="container2"
+          items={items.container2}
+          activeId={activeId}
+        />
+
+        <Container
+          id="container3"
+          items={items.container3}
+          activeId={activeId}
+        />
+
+        <DragOverlay>
+          {activeId ? <Item id={activeId} isActive={true} /> : null}
+        </DragOverlay>
       </DndContext>
     </div>
   );

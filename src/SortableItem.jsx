@@ -2,15 +2,25 @@ import React from "react";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 
-export function Item({ id }) {
+export function Item({ id, isActive }) {
   return (
-    <div className="bg-white border border-gray-200 rounded-md shadow p-4 flex items-center justify-between">
-      <span>{id}</span>
+    <div
+      className={`${
+        isActive ? "bg-blue-100 border-blue-300" : "bg-white border-gray-200"
+      } border rounded-md shadow p-4 flex items-center justify-between my-2`}
+    >
+      <button
+        onClick={() => {
+          console.log("id");
+        }}
+      >
+        {id}
+      </button>
     </div>
   );
 }
 
-export default function SortableItem({ id }) {
+export default function SortableItem({ id, isActive }) {
   const { attributes, listeners, setNodeRef, transform, transition } =
     useSortable({ id });
 
@@ -21,7 +31,7 @@ export default function SortableItem({ id }) {
 
   return (
     <div ref={setNodeRef} style={style} {...attributes} {...listeners}>
-      <Item id={id} />
+      <Item id={id} isActive={isActive} />
     </div>
   );
 }

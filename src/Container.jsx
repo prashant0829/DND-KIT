@@ -6,7 +6,7 @@ import {
 } from "@dnd-kit/sortable";
 import SortableItem from "./SortableItem";
 
-export default function Container({ id, items }) {
+export default function Container({ id, items, activeId }) {
   const { setNodeRef } = useDroppable({
     id,
   });
@@ -19,10 +19,14 @@ export default function Container({ id, items }) {
     >
       <div
         ref={setNodeRef}
-        className="bg-gray-200 p-4 m-4 flex-1 flex gap-2 flex-col rounded-md shadow-md"
+        className="bg-gray-200 p-4 m-4 flex-1 rounded-md shadow-md"
       >
-        {items.map((id) => (
-          <SortableItem key={id} id={id} />
+        {items.map((itemId) => (
+          <SortableItem
+            key={itemId}
+            id={itemId}
+            isActive={itemId === activeId}
+          />
         ))}
       </div>
     </SortableContext>

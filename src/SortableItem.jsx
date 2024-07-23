@@ -9,13 +9,7 @@ export function Item({ id, isActive }) {
         isActive ? "bg-blue-100 border-blue-300" : "bg-white border-gray-200"
       } border rounded-md shadow p-4 flex items-center justify-between my-2`}
     >
-      <button
-        onClick={() => {
-          console.log("id");
-        }}
-      >
-        {id}
-      </button>
+      <button>{id}</button>
     </div>
   );
 }
@@ -30,7 +24,15 @@ export default function SortableItem({ id, isActive }) {
   };
 
   return (
-    <div ref={setNodeRef} style={style} {...attributes} {...listeners}>
+    <div
+      ref={setNodeRef}
+      style={style}
+      {...attributes}
+      {...listeners}
+      onClick={() => {
+        console.log(id);
+      }}
+    >
       <Item id={id} isActive={isActive} />
     </div>
   );

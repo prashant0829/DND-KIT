@@ -12,22 +12,24 @@ import { arrayMove, sortableKeyboardCoordinates } from "@dnd-kit/sortable";
 import Constants from "./utils/utils";
 import Container from "./Container";
 import { Item } from "./SortableItem";
+import CustomSelect from "./components/CustomSelect";
 
 function getInitialItems() {
   const storedItems = localStorage.getItem(Constants.LOCAL_STORAGE_KEY);
   return storedItems
     ? JSON.parse(storedItems)
     : {
-        root: ["1", "2", "3"],
-        container1: ["4", "5", "6"],
-        container2: ["7", "8", "9"],
-        container3: [],
+        backlog: ["1", "2", "3"],
+        inProgress: ["4", "5", "6"],
+        completed: ["7", "8", "9"],
       };
 }
 
 export default function App() {
   const [items, setItems] = useState(getInitialItems);
   const [activeId, setActiveId] = useState(null);
+  const [itemText, setItemText] = useState("");
+  const [itemType, setItemType] = useState("backlog");
 
   useEffect(() => {
     localStorage.setItem(Constants.LOCAL_STORAGE_KEY, JSON.stringify(items));
@@ -64,7 +66,6 @@ export default function App() {
     const { id } = active;
     const { id: overId } = over;
 
-    // Find the containers
     const activeContainer = findContainer(id);
     const overContainer = findContainer(overId);
 
@@ -80,13 +81,11 @@ export default function App() {
       const activeItems = prev[activeContainer];
       const overItems = prev[overContainer];
 
-      // Find the indexes for the items
       const activeIndex = activeItems.indexOf(id);
       const overIndex = overItems.indexOf(overId);
 
       let newIndex;
       if (overId in prev) {
-        // We're at the root droppable of a container
         newIndex = overItems.length;
       } else {
         const isBelowLastItem =
@@ -118,7 +117,6 @@ export default function App() {
     const { active, over } = event;
     const { id } = active;
 
-    // Check if over is null
     if (!over) {
       setActiveId(null);
       return;
@@ -155,26 +153,74 @@ export default function App() {
     setActiveId(null);
   }
 
-  return (
-    <div style={Constants.wrapperStyle}>
-      <DndContext
-        announcements={Constants.defaultAnnouncements}
-        sensors={sensors}
-        collisionDetection={closestCorners}
-        onDragStart={handleDragStart}
-        onDragOver={handleDragOver}
-        onDragEnd={handleDragEnd}
-      >
-        {Object.keys(items).map((item) => (
-          <>
-            <Container id={item} items={items[item]} activeId={activeId} />
-          </>
-        ))}
+  const handleItemSave = () => {
+    if (itemText.trim() === "") return; // Avoid adding empty items
 
-        <DragOverlay>
-          {activeId ? <Item id={activeId} isActive={true} /> : null}
-        </DragOverlay>
-      </DndContext>
+    const newItemId = Date.now().toString(); // Unique ID for the new item
+
+    setItems((prev) => {
+      // Ensure that the container exists and is an array
+      const updatedItems = {
+        ...prev,
+        [itemType]: prev[itemType]
+          ? [...prev[itemType], newItemId]
+          : [newItemId],
+      };
+
+      return updatedItems;
+    });
+
+    // Optionally store the new item’s content or handle it here
+    // e.g., setItemContent((prev) => ({ ...prev, [newItemId]: itemText }));
+
+    setItemText(""); // Clear the input field
+  };
+
+  return (
+    <div>
+      <div className="flex gap-2 mb-4">
+        <input
+          type="text"
+          className="px-1 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          placeholder="Enter item value"
+          value={itemText}
+          onChange={(e) => {
+            setItemText(e.target.value);
+          }}
+        />
+        <CustomSelect itemType={itemType} setItemType={setItemType} />
+        <button
+          onClick={(e) => {
+            handleItemSave();
+          }}
+          className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
+        >
+          Submit
+        </button>
+      </div>
+      <div style={Constants.wrapperStyle}>
+        <DndContext
+          announcements={Constants.defaultAnnouncements}
+          sensors={sensors}
+          collisionDetection={closestCorners}
+          onDragStart={handleDragStart}
+          onDragOver={handleDragOver}
+          onDragEnd={handleDragEnd}
+        >
+          {Object.keys(items).map((item) => (
+            <Container
+              key={item}
+              id={item}
+              items={items[item]}
+              activeId={activeId}
+            />
+          ))}
+
+          <DragOverlay>
+            {activeId ? <Item id={activeId} isActive={true} /> : null}
+          </DragOverlay>
+        </DndContext>
+      </div>
     </div>
   );
 }

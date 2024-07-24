@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import {
   DndContext,
   DragOverlay,
@@ -9,49 +9,12 @@ import {
   useSensors,
 } from "@dnd-kit/core";
 import { arrayMove, sortableKeyboardCoordinates } from "@dnd-kit/sortable";
-
+import Constants from "./utils/utils";
 import Container from "./Container";
 import { Item } from "./SortableItem";
 
-const wrapperStyle = {
-  display: "flex",
-  flexDirection: "row",
-  gap: "10px", // Add gap between containers
-};
-
-const defaultAnnouncements = {
-  onDragStart(id) {
-    console.log(`Picked up draggable item ${id}.`);
-  },
-  onDragOver(id, overId) {
-    if (overId) {
-      console.log(
-        `Draggable item ${id} was moved over droppable area ${overId}.`
-      );
-      return;
-    }
-
-    console.log(`Draggable item ${id} is no longer over a droppable area.`);
-  },
-  onDragEnd(id, overId) {
-    if (overId) {
-      console.log(
-        `Draggable item ${id} was dropped over droppable area ${overId}`
-      );
-      return;
-    }
-
-    console.log(`Draggable item ${id} was dropped.`);
-  },
-  onDragCancel(id) {
-    console.log(`Dragging was cancelled. Draggable item ${id} was dropped.`);
-  },
-};
-
-const LOCAL_STORAGE_KEY = "dnd-items";
-
 function getInitialItems() {
-  const storedItems = localStorage.getItem(LOCAL_STORAGE_KEY);
+  const storedItems = localStorage.getItem(Constants.LOCAL_STORAGE_KEY);
   return storedItems
     ? JSON.parse(storedItems)
     : {
@@ -67,7 +30,7 @@ export default function App() {
   const [activeId, setActiveId] = useState(null);
 
   useEffect(() => {
-    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(items));
+    localStorage.setItem(Constants.LOCAL_STORAGE_KEY, JSON.stringify(items));
   }, [items]);
 
   const sensors = useSensors(
@@ -193,9 +156,9 @@ export default function App() {
   }
 
   return (
-    <div style={wrapperStyle}>
+    <div style={Constants.wrapperStyle}>
       <DndContext
-        announcements={defaultAnnouncements}
+        announcements={Constants.defaultAnnouncements}
         sensors={sensors}
         collisionDetection={closestCorners}
         onDragStart={handleDragStart}

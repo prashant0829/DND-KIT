@@ -165,25 +165,11 @@ export default function App() {
         onDragOver={handleDragOver}
         onDragEnd={handleDragEnd}
       >
-        <Container id="root" items={items.root} activeId={activeId} />
-
-        <Container
-          id="container1"
-          items={items.container1}
-          activeId={activeId}
-        />
-
-        <Container
-          id="container2"
-          items={items.container2}
-          activeId={activeId}
-        />
-
-        <Container
-          id="container3"
-          items={items.container3}
-          activeId={activeId}
-        />
+        {Object.keys(items).map((item) => (
+          <>
+            <Container id={item} items={items[item]} activeId={activeId} />
+          </>
+        ))}
 
         <DragOverlay>
           {activeId ? <Item id={activeId} isActive={true} /> : null}

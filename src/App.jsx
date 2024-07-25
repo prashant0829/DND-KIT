@@ -20,19 +20,19 @@ function getInitialItems() {
     ? JSON.parse(storedItems)
     : {
         backlog: [
-          { id: "1", content: "Item 1" },
-          { id: "2", content: "Item 2" },
-          { id: "3", content: "Item 3" },
+          { id: "1", content: "Item 1", position: 0 },
+          { id: "2", content: "Item 2", position: 1 },
+          { id: "3", content: "Item 3", position: 2 },
         ],
         inProgress: [
-          { id: "4", content: "Item 4" },
-          { id: "5", content: "Item 5" },
-          { id: "6", content: "Item 6" },
+          { id: "4", content: "Item 4", position: 0 },
+          { id: "5", content: "Item 5", position: 1 },
+          { id: "6", content: "Item 6", position: 2 },
         ],
         completed: [
-          { id: "7", content: "Item 7" },
-          { id: "8", content: "Item 8" },
-          { id: "9", content: "Item 9" },
+          { id: "7", content: "Item 7", position: 0 },
+          { id: "8", content: "Item 8", position: 1 },
+          { id: "9", content: "Item 9", position: 2 },
         ],
       };
 }
@@ -45,6 +45,7 @@ export default function App() {
 
   useEffect(() => {
     localStorage.setItem(Constants.LOCAL_STORAGE_KEY, JSON.stringify(items));
+    console.log(items);
   }, [items]);
 
   const sensors = useSensors(
@@ -157,14 +158,23 @@ export default function App() {
     );
 
     if (activeIndex !== overIndex) {
-      setItems((items) => ({
-        ...items,
-        [overContainer]: arrayMove(
-          items[overContainer],
-          activeIndex,
-          overIndex
-        ),
-      }));
+      setItems((items) => {
+        const updatedItems = {
+          ...items,
+          [overContainer]: arrayMove(
+            items[overContainer],
+            activeIndex,
+            overIndex
+          ),
+        };
+
+        // Update position for each item in the container
+        updatedItems[overContainer] = updatedItems[overContainer].map(
+          (item, index) => ({ ...item, position: index })
+        );
+
+        return updatedItems;
+      });
     }
 
     setActiveId(null);
@@ -180,8 +190,15 @@ export default function App() {
       const updatedItems = {
         ...prev,
         [itemType]: prev[itemType]
-          ? [...prev[itemType], { id: newItemId, content: itemText }]
-          : [{ id: newItemId, content: itemText }],
+          ? [
+              ...prev[itemType],
+              {
+                id: newItemId,
+                content: itemText,
+                position: prev[itemType].length,
+              },
+            ]
+          : [{ id: newItemId, content: itemText, position: 0 }],
       };
 
       return updatedItems;

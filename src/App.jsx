@@ -19,9 +19,21 @@ function getInitialItems() {
   return storedItems
     ? JSON.parse(storedItems)
     : {
-        backlog: ["1", "2", "3"],
-        inProgress: ["4", "5", "6"],
-        completed: ["7", "8", "9"],
+        backlog: [
+          { id: "1", content: "Item 1" },
+          { id: "2", content: "Item 2" },
+          { id: "3", content: "Item 3" },
+        ],
+        inProgress: [
+          { id: "4", content: "Item 4" },
+          { id: "5", content: "Item 5" },
+          { id: "6", content: "Item 6" },
+        ],
+        completed: [
+          { id: "7", content: "Item 7" },
+          { id: "8", content: "Item 8" },
+          { id: "9", content: "Item 9" },
+        ],
       };
 }
 
@@ -47,11 +59,12 @@ export default function App() {
   );
 
   function findContainer(id) {
-    if (id in items) {
-      return id;
+    for (const key in items) {
+      if (items[key].some((item) => item.id === id)) {
+        return key;
+      }
     }
-
-    return Object.keys(items).find((key) => items[key].includes(id));
+    return null;
   }
 
   function handleDragStart(event) {
@@ -81,8 +94,8 @@ export default function App() {
       const activeItems = prev[activeContainer];
       const overItems = prev[overContainer];
 
-      const activeIndex = activeItems.indexOf(id);
-      const overIndex = overItems.indexOf(overId);
+      const activeIndex = activeItems.findIndex((item) => item.id === id);
+      const overIndex = overItems.findIndex((item) => item.id === overId);
 
       let newIndex;
       if (overId in prev) {
@@ -102,7 +115,7 @@ export default function App() {
       return {
         ...prev,
         [activeContainer]: [
-          ...prev[activeContainer].filter((item) => item !== active.id),
+          ...prev[activeContainer].filter((item) => item.id !== active.id),
         ],
         [overContainer]: [
           ...prev[overContainer].slice(0, newIndex),
@@ -136,8 +149,12 @@ export default function App() {
       return;
     }
 
-    const activeIndex = items[activeContainer].indexOf(active.id);
-    const overIndex = items[overContainer].indexOf(overId);
+    const activeIndex = items[activeContainer].findIndex(
+      (item) => item.id === active.id
+    );
+    const overIndex = items[overContainer].findIndex(
+      (item) => item.id === overId
+    );
 
     if (activeIndex !== overIndex) {
       setItems((items) => ({
@@ -163,15 +180,12 @@ export default function App() {
       const updatedItems = {
         ...prev,
         [itemType]: prev[itemType]
-          ? [...prev[itemType], newItemId]
-          : [newItemId],
+          ? [...prev[itemType], { id: newItemId, content: itemText }]
+          : [{ id: newItemId, content: itemText }],
       };
 
       return updatedItems;
     });
-
-    // Optionally store the new item’s content or handle it here
-    // e.g., setItemContent((prev) => ({ ...prev, [newItemId]: itemText }));
 
     setItemText(""); // Clear the input field
   };

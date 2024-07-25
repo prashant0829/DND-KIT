@@ -25,6 +25,7 @@ export default function Container({ id, items, activeId }) {
           <SortableItem
             key={item.id}
             id={item.id}
+            text={item.content}
             isActive={item.id === activeId}
           />
         ))}

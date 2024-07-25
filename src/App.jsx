@@ -16,32 +16,16 @@ import CustomSelect from "./components/CustomSelect";
 
 function getInitialItems() {
   const storedItems = localStorage.getItem(Constants.LOCAL_STORAGE_KEY);
-  return storedItems
-    ? JSON.parse(storedItems)
-    : {
-        backlog: [
-          { id: "1", content: "Item 1", position: 0 },
-          { id: "2", content: "Item 2", position: 1 },
-          { id: "3", content: "Item 3", position: 2 },
-        ],
-        inProgress: [
-          { id: "4", content: "Item 4", position: 0 },
-          { id: "5", content: "Item 5", position: 1 },
-          { id: "6", content: "Item 6", position: 2 },
-        ],
-        completed: [
-          { id: "7", content: "Item 7", position: 0 },
-          { id: "8", content: "Item 8", position: 1 },
-          { id: "9", content: "Item 9", position: 2 },
-        ],
-      };
+  return storedItems ? JSON.parse(storedItems) : {};
 }
 
 export default function App() {
   const [items, setItems] = useState(getInitialItems);
   const [activeId, setActiveId] = useState(null);
+  const [activeItem, setActiveItem] = useState(null);
   const [itemText, setItemText] = useState("");
   const [itemType, setItemType] = useState("backlog");
+  const [newContainerName, setNewContainerName] = useState("");
 
   useEffect(() => {
     localStorage.setItem(Constants.LOCAL_STORAGE_KEY, JSON.stringify(items));
@@ -73,6 +57,11 @@ export default function App() {
     const { id } = active;
 
     setActiveId(id);
+    const container = findContainer(id);
+    if (container) {
+      const item = items[container].find((item) => item.id === id);
+      setActiveItem(item);
+    }
   }
 
   function handleDragOver(event) {
@@ -133,6 +122,7 @@ export default function App() {
 
     if (!over) {
       setActiveId(null);
+      setActiveItem(null);
       return;
     }
 
@@ -147,6 +137,7 @@ export default function App() {
       activeContainer !== overContainer
     ) {
       setActiveId(null);
+      setActiveItem(null);
       return;
     }
 
@@ -170,7 +161,10 @@ export default function App() {
 
         // Update position for each item in the container
         updatedItems[overContainer] = updatedItems[overContainer].map(
-          (item, index) => ({ ...item, position: index })
+          (item, index) => ({
+            ...item,
+            position: index,
+          })
         );
 
         return updatedItems;
@@ -178,15 +172,15 @@ export default function App() {
     }
 
     setActiveId(null);
+    setActiveItem(null);
   }
 
   const handleItemSave = () => {
-    if (itemText.trim() === "") return; // Avoid adding empty items
+    if (itemText.trim() === "" || itemType.trim() === "") return; // Avoid adding empty items or invalid container
 
     const newItemId = Date.now().toString(); // Unique ID for the new item
 
     setItems((prev) => {
-      // Ensure that the container exists and is an array
       const updatedItems = {
         ...prev,
         [itemType]: prev[itemType]
@@ -207,6 +201,17 @@ export default function App() {
     setItemText(""); // Clear the input field
   };
 
+  const handleAddContainer = () => {
+    if (newContainerName.trim() === "") return; // Avoid adding empty container names
+
+    setItems((prev) => ({
+      ...prev,
+      [newContainerName]: [],
+    }));
+
+    setNewContainerName(""); // Clear the input field
+  };
+
   return (
     <div>
       <div className="flex gap-2 mb-4">
@@ -221,12 +226,27 @@ export default function App() {
         />
         <CustomSelect itemType={itemType} setItemType={setItemType} />
         <button
-          onClick={(e) => {
-            handleItemSave();
-          }}
+          onClick={handleItemSave}
           className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
         >
           Submit
+        </button>
+      </div>
+      <div className="flex gap-2 mb-4">
+        <input
+          type="text"
+          className="px-1 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          placeholder="New container name"
+          value={newContainerName}
+          onChange={(e) => {
+            setNewContainerName(e.target.value);
+          }}
+        />
+        <button
+          onClick={handleAddContainer}
+          className="px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600"
+        >
+          Add Container
         </button>
       </div>
       <div style={Constants.wrapperStyle}>
@@ -248,7 +268,9 @@ export default function App() {
           ))}
 
           <DragOverlay>
-            {activeId ? <Item id={activeId} isActive={true} /> : null}
+            {activeId ? (
+              <Item id={activeId} isActive={true} text={activeItem.content} />
+            ) : null}
           </DragOverlay>
         </DndContext>
       </div>

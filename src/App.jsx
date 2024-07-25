@@ -19,9 +19,21 @@ function getInitialItems() {
   return storedItems
     ? JSON.parse(storedItems)
     : {
-        backlog: ["1", "2", "3"],
-        inProgress: ["4", "5", "6"],
-        completed: ["7", "8", "9"],
+        backlog: [
+          { id: "1", taskValue: "Task 1", taskText: "Task 1 description" },
+          { id: "2", taskValue: "Task 2", taskText: "Task 2 description" },
+          { id: "3", taskValue: "Task 3", taskText: "Task 3 description" },
+        ],
+        inProgress: [
+          { id: "4", taskValue: "Task 4", taskText: "Task 4 description" },
+          { id: "5", taskValue: "Task 5", taskText: "Task 5 description" },
+          { id: "6", taskValue: "Task 6", taskText: "Task 6 description" },
+        ],
+        completed: [
+          { id: "7", taskValue: "Task 7", taskText: "Task 7 description" },
+          { id: "8", taskValue: "Task 8", taskText: "Task 8 description" },
+          { id: "9", taskValue: "Task 9", taskText: "Task 9 description" },
+        ],
       };
 }
 
@@ -51,7 +63,9 @@ export default function App() {
       return id;
     }
 
-    return Object.keys(items).find((key) => items[key].includes(id));
+    return Object.keys(items).find((key) =>
+      items[key].some((item) => item.id === id)
+    );
   }
 
   function handleDragStart(event) {
@@ -81,8 +95,8 @@ export default function App() {
       const activeItems = prev[activeContainer];
       const overItems = prev[overContainer];
 
-      const activeIndex = activeItems.indexOf(id);
-      const overIndex = overItems.indexOf(overId);
+      const activeIndex = activeItems.findIndex((item) => item.id === id);
+      const overIndex = overItems.findIndex((item) => item.id === overId);
 
       let newIndex;
       if (overId in prev) {
@@ -101,9 +115,9 @@ export default function App() {
 
       return {
         ...prev,
-        [activeContainer]: [
-          ...prev[activeContainer].filter((item) => item !== active.id),
-        ],
+        [activeContainer]: prev[activeContainer].filter(
+          (item) => item.id !== active.id
+        ),
         [overContainer]: [
           ...prev[overContainer].slice(0, newIndex),
           items[activeContainer][activeIndex],
@@ -136,8 +150,12 @@ export default function App() {
       return;
     }
 
-    const activeIndex = items[activeContainer].indexOf(active.id);
-    const overIndex = items[overContainer].indexOf(overId);
+    const activeIndex = items[activeContainer].findIndex(
+      (item) => item.id === active.id
+    );
+    const overIndex = items[overContainer].findIndex(
+      (item) => item.id === overId
+    );
 
     if (activeIndex !== overIndex) {
       setItems((items) => ({
@@ -159,19 +177,19 @@ export default function App() {
     const newItemId = Date.now().toString(); // Unique ID for the new item
 
     setItems((prev) => {
-      // Ensure that the container exists and is an array
+      const newItem = {
+        id: newItemId,
+        taskValue: `Task ${newItemId}`,
+        taskText: itemText,
+      };
+
       const updatedItems = {
         ...prev,
-        [itemType]: prev[itemType]
-          ? [...prev[itemType], newItemId]
-          : [newItemId],
+        [itemType]: prev[itemType] ? [...prev[itemType], newItem] : [newItem],
       };
 
       return updatedItems;
     });
-
-    // Optionally store the new item’s content or handle it here
-    // e.g., setItemContent((prev) => ({ ...prev, [newItemId]: itemText }));
 
     setItemText(""); // Clear the input field
   };

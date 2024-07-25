@@ -21,11 +21,11 @@ export default function Container({ id, items, activeId }) {
         ref={setNodeRef}
         className="bg-gray-200 p-4 m-4 flex-1 rounded-md shadow-md"
       >
-        {items.map((itemId) => (
+        {items.map((item) => (
           <SortableItem
-            key={itemId}
-            id={itemId}
-            isActive={itemId === activeId}
+            key={item.id}
+            id={item.id}
+            isActive={item.id === activeId}
           />
         ))}
       </div>

@@ -58,6 +58,10 @@ export default function App() {
     );
   }
 
+  function updatePositions(container) {
+    return container.map((item, index) => ({ ...item, position: index + 1 }));
+  }
+
   function handleDragStart(event) {
     const { active } = event;
     const { id } = active;
@@ -103,16 +107,19 @@ export default function App() {
         newIndex = overIndex >= 0 ? overIndex + modifier : overItems.length;
       }
 
+      const newActiveContainer = prev[activeContainer].filter(
+        (item) => item.id !== active.id
+      );
+      const newOverContainer = [
+        ...prev[overContainer].slice(0, newIndex),
+        items[activeContainer][activeIndex],
+        ...prev[overContainer].slice(newIndex),
+      ];
+
       return {
         ...prev,
-        [activeContainer]: prev[activeContainer].filter(
-          (item) => item.id !== active.id
-        ),
-        [overContainer]: [
-          ...prev[overContainer].slice(0, newIndex),
-          items[activeContainer][activeIndex],
-          ...prev[overContainer].slice(newIndex),
-        ],
+        [activeContainer]: updatePositions(newActiveContainer),
+        [overContainer]: updatePositions(newOverContainer),
       };
     });
   }
@@ -148,14 +155,18 @@ export default function App() {
     );
 
     if (activeIndex !== overIndex) {
-      setItems((items) => ({
-        ...items,
-        [overContainer]: arrayMove(
+      setItems((items) => {
+        const newContainer = arrayMove(
           items[overContainer],
           activeIndex,
           overIndex
-        ),
-      }));
+        );
+
+        return {
+          ...items,
+          [overContainer]: updatePositions(newContainer),
+        };
+      });
     }
 
     setActiveId(null);
@@ -171,6 +182,7 @@ export default function App() {
         id: newItemId,
         taskValue: itemText,
         taskText: itemDescription,
+        position: prev[itemType].length + 1,
       };
 
       const updatedItems = {

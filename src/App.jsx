@@ -19,21 +19,9 @@ function getInitialItems() {
   return storedItems
     ? JSON.parse(storedItems)
     : {
-        backlog: [
-          { id: "1", taskValue: "Task 1", taskText: "Task 1 description" },
-          { id: "2", taskValue: "Task 2", taskText: "Task 2 description" },
-          { id: "3", taskValue: "Task 3", taskText: "Task 3 description" },
-        ],
-        inProgress: [
-          { id: "4", taskValue: "Task 4", taskText: "Task 4 description" },
-          { id: "5", taskValue: "Task 5", taskText: "Task 5 description" },
-          { id: "6", taskValue: "Task 6", taskText: "Task 6 description" },
-        ],
-        completed: [
-          { id: "7", taskValue: "Task 7", taskText: "Task 7 description" },
-          { id: "8", taskValue: "Task 8", taskText: "Task 8 description" },
-          { id: "9", taskValue: "Task 9", taskText: "Task 9 description" },
-        ],
+        backlog: [],
+        inProgress: [],
+        completed: [],
       };
 }
 
@@ -41,10 +29,12 @@ export default function App() {
   const [items, setItems] = useState(getInitialItems);
   const [activeId, setActiveId] = useState(null);
   const [itemText, setItemText] = useState("");
+  const [itemDescription, setItemDescription] = useState("");
   const [itemType, setItemType] = useState("backlog");
 
   useEffect(() => {
     localStorage.setItem(Constants.LOCAL_STORAGE_KEY, JSON.stringify(items));
+    console.log(items);
   }, [items]);
 
   const sensors = useSensors(
@@ -172,15 +162,15 @@ export default function App() {
   }
 
   const handleItemSave = () => {
-    if (itemText.trim() === "") return; // Avoid adding empty items
+    if (itemText.trim() === "" || itemDescription.trim() === "") return; // Avoid adding empty items
 
     const newItemId = Date.now().toString(); // Unique ID for the new item
 
     setItems((prev) => {
       const newItem = {
         id: newItemId,
-        taskValue: `Task ${newItemId}`,
-        taskText: itemText,
+        taskValue: itemText,
+        taskText: itemDescription,
       };
 
       const updatedItems = {
@@ -192,6 +182,7 @@ export default function App() {
     });
 
     setItemText(""); // Clear the input field
+    setItemDescription(""); // Clear the description field
   };
 
   return (
@@ -200,10 +191,19 @@ export default function App() {
         <input
           type="text"
           className="px-1 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-          placeholder="Enter item value"
+          placeholder="Enter task value"
           value={itemText}
           onChange={(e) => {
             setItemText(e.target.value);
+          }}
+        />
+        <input
+          type="text"
+          className="px-1 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          placeholder="Enter task description"
+          value={itemDescription}
+          onChange={(e) => {
+            setItemDescription(e.target.value);
           }}
         />
         <CustomSelect itemType={itemType} setItemType={setItemType} />

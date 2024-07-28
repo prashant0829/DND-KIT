@@ -198,7 +198,7 @@ export default function Boards() {
   };
 
   return (
-    <div>
+    <div className="w-full">
       <div className="flex gap-2 mb-4">
         <input
           type="text"

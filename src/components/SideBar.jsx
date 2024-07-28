@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 import {
   FaTasks,
   FaCalendarAlt,
@@ -9,6 +10,9 @@ import {
   FaBars,
   FaTimes,
   FaSignOutAlt,
+  FaTrello,
+  FaTachometerAlt,
+  FaStickyNote,
 } from "react-icons/fa";
 
 const SideBar = () => {
@@ -33,12 +37,14 @@ const SideBar = () => {
     <div className="">
       <div
         className={`flex flex-col ${
-          isOpen ? "w-64" : "w-12"
-        }  text-gray-600 transition-all duration-500 border-r-2 text-[14px] border border-gray-200 shadow-lg rounded-lg box-border m-2`}
+          isOpen ? "w-56" : "w-12"
+        }  text-customGray-1 transition-all duration-500 text-[14px] border border-gray-200 shadow-lg rounded-lg box-border my-2 ml-2 font-thin`}
         style={{ height: "calc(100vh - 1rem)" }}
       >
         <div className="flex items-center justify-between p-4 border-b border-gray-200 min-h-14">
-          <div className="text font-bold">{isOpen ? "Tasky" : ""}</div>
+          <div className="text-[18px] font-bold text-customBlue-1">
+            {isOpen ? "Tasky" : ""}
+          </div>
           <button onClick={toggleSidebar}>
             {isOpen ? <FaTimes size={15} /> : <FaBars size={15} />}
           </button>
@@ -46,16 +52,19 @@ const SideBar = () => {
         <div className="flex flex-col flex-grow overflow-auto navbar">
           <nav className="flex flex-col p-2">
             {[
-              { icon: FaTasks, label: "Tasks" },
-              { icon: FaCalendarAlt, label: "Calendar" },
-              { icon: FaProjectDiagram, label: "Projects" },
-              { icon: FaChartPie, label: "Reports" },
-              { icon: FaUsers, label: "Team" },
-            ].map(({ icon: Icon, label }, index) => (
-              <a
+              { icon: FaTachometerAlt, label: "Dashboard", path: "/dashboard" },
+              { icon: FaTrello, label: "Tasks", path: "/tasks" },
+              { icon: FaTasks, label: "Boards", path: "/boards" },
+              { icon: FaCalendarAlt, label: "Calendar", path: "/calendar" },
+              { icon: FaProjectDiagram, label: "Projects", path: "/projects" },
+              { icon: FaChartPie, label: "Reports", path: "/reports" },
+              { icon: FaUsers, label: "Team", path: "/team" },
+              { icon: FaStickyNote, label: "Notes", path: "/notes" },
+            ].map(({ icon: Icon, label, path }, index) => (
+              <Link
                 key={index}
-                href="#"
-                className="flex items-center px-2 py-2 mb-2 transition-all duration-300 hover:bg-gray-100 hover:text-black rounded-md"
+                to={path}
+                className="flex items-center px-2 py-2 mb-2 transition-all duration-300 hover:bg-customBlue-2 hover:text-customBlue-1 rounded-md"
               >
                 <div className="">
                   <Icon size={15} />
@@ -68,11 +77,11 @@ const SideBar = () => {
                     {label}
                   </span>
                 )}
-              </a>
+              </Link>
             ))}
             <hr className="my-4 border-gray-200" />
-            <a
-              href="#"
+            <Link
+              to="/settings"
               className="flex items-center px-2 py-2 mb-2 transition-all duration-300 hover:bg-gray-100 hover:text-black rounded-md"
             >
               <FaCog size={15} />
@@ -83,7 +92,7 @@ const SideBar = () => {
                   Settings
                 </span>
               )}
-            </a>
+            </Link>
             <hr className="my-4 border-gray-200" />
           </nav>
         </div>
@@ -104,8 +113,8 @@ const SideBar = () => {
               </span>
             )}
           </div>
-          <a
-            href="#"
+          <Link
+            to="/signout"
             className="flex items-center px-2 py-2 mb-2 transition-all duration-300 hover:bg-gray-100 hover:text-black rounded-md"
           >
             <FaSignOutAlt size={15} />
@@ -118,7 +127,7 @@ const SideBar = () => {
                 Sign out
               </span>
             )}
-          </a>
+          </Link>
         </div>
       </div>
     </div>

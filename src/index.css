@@ -13,5 +13,40 @@ body {
 }
 
 .navbar{
-    font-weight: 400;
+    font-weight: 300;
 }
+
+/* Style for Webkit-based browsers (Chrome, Safari) */
+::-webkit-scrollbar {
+    width: 8px; /* Width of the scrollbar */
+    height: 8px; /* Height of the scrollbar */
+  }
+  
+  ::-webkit-scrollbar-thumb {
+    background-color: rgba(128, 128, 128, 0.7); /* Grey color with some transparency */
+    border-radius: 4px; /* Rounded corners */
+  }
+  
+  ::-webkit-scrollbar-thumb:hover {
+    background-color: rgba(128, 128, 128, 1); /* Darker grey on hover */
+  }
+  
+  ::-webkit-scrollbar-track {
+    background-color: rgba(245, 245, 245, 1); /* Light grey background */
+  }
+  
+  /* Style for Firefox */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(128, 128, 128, 0.7) rgba(245, 245, 245, 1);
+  }
+  
+  /* General styles for all scrollbars */
+  ::-webkit-scrollbar-track-piece {
+    background-color: rgba(245, 245, 245, 1);
+  }
+  
+  ::-webkit-scrollbar-corner {
+    background-color: rgba(245, 245, 245, 1);
+  }
+  

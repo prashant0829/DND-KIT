@@ -23,6 +23,8 @@ const Layout = ({ children }) => {
         return "Settings";
       case "/notes":
         return "Notes";
+      case "/boards":
+        return "Boards";
       default:
         return "Dashboard";
     }
@@ -35,11 +37,11 @@ const Layout = ({ children }) => {
     <div className="flex gap-2" style={{ height: "100vh" }}>
       <SideBar />
       <div className="flex flex-col flex-grow">
-        <div style={{ height: topBarHeight }}>
+        <div style={{ maxHeightheight: topBarHeight }}>
           <TopBar pageName={pageName} />
         </div>
         <div
-          className="flex flex-grow gap-4 text-[14px] border border-gray-200 shadow-lg rounded-lg box-border mb-2 mr-2 font-thin py-4 px-2 overflow-auto"
+          className="flex flex-col flex-grow gap-4 text-[14px] border border-gray-200 shadow-lg rounded-lg box-border mb-2 mr-2 font-thin py-4 px-2 overflow-auto bg-neutral-2"
           style={{ height: `calc(100vh - ${topBarHeight})` }}
         >
           {children}

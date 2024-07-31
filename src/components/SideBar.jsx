@@ -42,8 +42,8 @@ const SideBar = () => {
         style={{ height: "calc(100vh - 1rem)" }}
       >
         <div className="flex items-center justify-between p-4 border-b border-gray-200 min-h-14">
-          <div className="text-[18px] font-bold text-customBlue-1">
-            {isOpen ? "Tasky" : ""}
+          <div className="text-[18px] font-bold text-customBlue-1 transition-opacity duration-300 animate-fadeIn">
+            {showText ? "Tasky" : ""}
           </div>
           <button onClick={toggleSidebar}>
             {isOpen ? <FaTimes size={15} /> : <FaBars size={15} />}
